@@ -17,7 +17,7 @@
 
 我们为普通用户提供了方便的 **安装包**，无需关心复杂的配置和技术细节，下载安装即可使用！
 
-1.  **下载**: 点击这里下载最新版本的安装包 👉 [**下载最新版 (MhtToPdfConverter_Setup.exe)**](https://github.com/zaijun91/Slech-Batch-Conversion-Tool/releases/latest)。 在打开的页面中，找到 "Assets" 部分，点击 `MhtToPdfConverter_Setup.exe` 进行下载。
+1.  **下载**: 点击这里下载最新版本的安装包 👉 [**下载最新版 (MhtToPdfConverter_Setup.exe)**](https://github.com/zaijun91/MHT-PDF-Converter/releases/latest)。 在打开的页面中，找到 "Assets" 部分，点击 `MhtToPdfConverter_Setup.exe` 进行下载。
 2.  **安装**: 双击运行下载的 `MhtToPdfConverter_Setup.exe` 文件，按照提示完成安装。安装程序会自动检查并提示安装所需的 WebView2 运行时（如果您的系统缺少的话）。
 3.  **运行**: 安装完成后，可以从开始菜单或桌面快捷方式（如果创建了）启动 "MHT to PDF Converter"。
 4.  **使用**:
@@ -30,7 +30,7 @@
 
 本项目主要使用以下技术构建：
 
-*   **.NET 8**: 最新的微软开发平台。
+*   **.NET 8**: 本项目使用的微软开发平台，目标框架为 `net8.0-windows`。
 *   **WPF (Windows Presentation Foundation)**: 用于构建 Windows 桌面应用程序界面的框架。
 *   **MVVM (Model-View-ViewModel)**: 一种流行的软件架构模式，用于分离界面逻辑和业务逻辑。
 *   **Microsoft Edge WebView2**: 嵌入 Edge 浏览器引擎，用于精确渲染 MHT/MHTML 文件并进行打印到 PDF 的操作。
@@ -40,9 +40,25 @@
 ## 从源代码构建 (面向开发者)
 
 1.  克隆本仓库。
-2.  使用 Visual Studio 2022 或更高版本打开解决方案 (`.sln`) 文件，或者使用 .NET CLI。
+2.  使用 Visual Studio 2022 或更高版本打开解决方案 (`MhtToPdfConverter.sln`) 文件，或者使用 .NET CLI。
 3.  确保已安装 .NET 8 SDK。
 4.  构建解决方案 (Debug 或 Release 配置)。
+
+构建环境为 **Windows + .NET 8 SDK**（仅安装运行时不能编译）。本项目使用 WPF 和 Windows Shell API，不支持在 Linux/macOS 上运行。通过 Visual Studio 构建时需安装“.NET 桌面开发”工作负载。运行程序和实际转换文件还需要 WebView2 Runtime。
+
+在仓库根目录打开 PowerShell，执行：
+
+```powershell
+dotnet --version
+dotnet restore MhtToPdfConverter.sln
+dotnet build MhtToPdfConverter.sln --configuration Release --no-restore
+```
+
+若同时安装了多个 SDK，`dotnet --version` 可能显示更高版本；需要与 CI 一致时，请选择已安装的 .NET 8 SDK。Release 构建输出位于 `bin/Release/net8.0-windows/`。普通用户可直接使用上方 Releases 中已有的 `MhtToPdfConverter_Setup.exe` 安装包。
+
+### 自动构建与验证范围
+
+`.github/workflows/windows-build.yml` 在推送和 Pull Request 时使用 Windows 与 .NET 8 SDK，还原依赖并编译 Release 配置。当前解决方案只有应用项目，没有自动化测试项目；构建通过不代表已验证界面操作、实际 MHT 转换效果或安装过程。这些场景仍需在 Windows 上手动检查。工作流不会打包安装程序或发布 Release。
 
 ## 打包 (面向开发者)
 
@@ -50,7 +66,9 @@
 2.  从微软官方下载 [WebView2 Evergreen Standalone Installer (x64)](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)，将其重命名为 `WebView2Runtime.exe` 并放置在 `Packaging/Resources` 目录下。
 3.  准备一个应用程序图标文件 `app_icon.ico` 并放置在 `Packaging/Resources` 目录下。
 4.  安装 [Inno Setup 6](https://jrsoftware.org/isinfo.php)。
-5.  使用 Inno Setup Compiler (ISCC.exe) 编译 `Packaging/MhtToPdfConverter_Setup.iss` 脚本。生成的安装包将位于 `docs/out` 目录。
+5.  使用 Inno Setup Compiler (ISCC.exe) 编译 `Packaging/MhtToPdfConverter_Setup.iss` 脚本。生成的安装包位置由脚本中的 `OutputDir` 决定；请先将现有的本机绝对路径改为适合您环境的输出目录（例如 `docs/out`）。
+
+打包前还需检查脚本中的 `AppId` 占位值，并准备上述 `WebView2Runtime.exe`；该运行时安装文件未包含在源码仓库中。仅执行源码构建命令不会生成安装包。
 
 ## 联系方式 (Contact)
 
