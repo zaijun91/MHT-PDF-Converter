@@ -1,0 +1,38 @@
+name: Windows build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 8
+        id: dotnet
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+          dotnet-quality: ga
+
+      - name: Select .NET 8 SDK
+        shell: pwsh
+        run: |
+          '{"sdk":{"version":"${{ steps.dotnet.outputs.dotnet-version }}","rollForward":"disable"}}' | Set-Content -Path global.json
+          dotnet --version
+
+      - name: Restore
+        run: dotnet restore MhtToPdfConverter.sln
+
+      - name: Build Release
+        run: dotnet build MhtToPdfConverter.sln --configuration Release --no-restore
